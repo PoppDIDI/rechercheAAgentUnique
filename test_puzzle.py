@@ -13,7 +13,7 @@ BLEU = (0, 0, 255)
 
 # Création de la fenêtre
 ecran = pygame.display.set_mode((TAILLE_ECRAN, TAILLE_ECRAN))
-pygame.display.set_caption("Puzzle 3x3")
+pygame.display.set_caption("Puzzle 3x3 - Clavier et Souris")
 
 # Fonction pour générer une grille initiale
 def generer_grille():
@@ -61,6 +61,11 @@ def est_resolu(grille):
     solution = list(range(1, 9)) + [None]
     return [tuile for ligne in grille for tuile in ligne] == solution
 
+# Fonction pour convertir la position de la souris en coordonnées de grille
+def position_souris_en_grille(pos):
+    x, y = pos
+    return x // TAILLE_TUILE, y // TAILLE_TUILE
+
 # Initialisation
 grille = generer_grille()
 trou = trouver_trou(grille)
@@ -72,6 +77,7 @@ while running:
         if event.type == pygame.QUIT:
             running = False
         elif event.type == pygame.KEYDOWN:
+            # Déplacement avec les flèches du clavier
             if event.key == pygame.K_UP:
                 trou = bouger_tuile(grille, trou, (0, -1))  # Déplace la tuile du haut vers le bas
             elif event.key == pygame.K_DOWN:
@@ -80,6 +86,15 @@ while running:
                 trou = bouger_tuile(grille, trou, (-1, 0))  # Déplace la tuile de gauche vers la droite
             elif event.key == pygame.K_RIGHT:
                 trou = bouger_tuile(grille, trou, (1, 0))  # Déplace la tuile de droite vers la gauche
+        elif event.type == pygame.MOUSEBUTTONDOWN:
+            # Déplacement avec la souris
+            if event.button == 1:  # Clic gauche
+                x, y = position_souris_en_grille(event.pos)
+                trou_x, trou_y = trou
+                # Vérifier si la tuile cliquée est adjacente au trou
+                if (x == trou_x and abs(y - trou_y) == 1) or (y == trou_y and abs(x - trou_x) == 1):
+                    grille[trou_y][trou_x], grille[y][x] = grille[y][x], grille[trou_y][trou_x]
+                    trou = (x, y)
 
     # Dessiner la grille à chaque itération
     dessiner_grille(ecran, grille)
